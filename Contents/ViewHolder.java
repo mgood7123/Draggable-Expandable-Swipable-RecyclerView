@@ -1,4 +1,4 @@
-package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView;
+package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents;
 
 import android.graphics.Color;
 import android.view.View;

@@ -1,16 +1,13 @@
-package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView;
+package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-
-import smallville7123.example.taskbuilder.TextViewUtils;
 
 public class RecyclerListAdapter extends RecyclerView.Adapter<ViewHolder> {
 
