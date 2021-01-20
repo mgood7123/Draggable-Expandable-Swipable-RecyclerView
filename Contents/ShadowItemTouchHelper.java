@@ -2530,7 +2530,12 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                                     Log.d(TAG, "onDrawShadow() called with: canvas = [" + canvas + "]");
                                 }
                             };
-                            selected.startDragAndDrop(null, shadowBuilder, new Pair<>(ShadowItemTouchHelper.this, vh), 0);
+                            selected.startDragAndDrop(
+                                    null,
+                                    shadowBuilder,
+                                    new Pair<>(ShadowItemTouchHelper.this, vh),
+                                    View.DRAG_FLAG_GLOBAL|View.DRAG_FLAG_OPAQUE
+                            );
                         }
                     }
                 }
