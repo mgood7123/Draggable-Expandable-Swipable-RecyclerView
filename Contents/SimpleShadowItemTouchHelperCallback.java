@@ -1,15 +1,11 @@
 package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents;
 
-import android.util.Log;
-import android.view.DragEvent;
-import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.Collections;
 
-public class SimpleShadowItemTouchHelperCallback extends ItemTouchHelper.Callback {
+public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.Callback {
 
     private static final String TAG = "SimpleShadowItemTouchHe";
 
@@ -39,8 +35,8 @@ public class SimpleShadowItemTouchHelperCallback extends ItemTouchHelper.Callbac
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        final int dragFlags = ItemTouchHelper.START | ItemTouchHelper.END | ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-        final int swipeFlags = ItemTouchHelper.END;
+        final int dragFlags = ShadowItemTouchHelper.START | ShadowItemTouchHelper.END | ShadowItemTouchHelper.UP | ShadowItemTouchHelper.DOWN;
+        final int swipeFlags = ShadowItemTouchHelper.END;
         return makeMovementFlags(dragFlags, swipeFlags);
     }
 
@@ -75,7 +71,7 @@ public class SimpleShadowItemTouchHelperCallback extends ItemTouchHelper.Callbac
 
     @Override
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-        if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
+        if (actionState != ShadowItemTouchHelper.ACTION_STATE_IDLE) {
             ((ViewHolder) viewHolder).onItemSelected();
         }
         super.onSelectedChanged(viewHolder, actionState);

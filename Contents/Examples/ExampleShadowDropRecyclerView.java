@@ -1,16 +1,11 @@
 package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.Examples;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
-import android.view.DragEvent;
 import android.view.Gravity;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -20,12 +15,9 @@ import androidx.annotation.DrawableRes;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.switchmaterial.SwitchMaterial;
-
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ExpandableView;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ItemTouchHelper;
+import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper;
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.RecyclerListAdapter;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.SimpleItemTouchHelperCallback;
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.SimpleShadowItemTouchHelperCallback;
 
 import static android.R.drawable.ic_menu_delete;
@@ -75,7 +67,7 @@ public class ExampleShadowDropRecyclerView extends RecyclerView {
         setAdapter(adapter);
         setLayoutManager(new LinearLayoutManager(context));
 
-        new ItemTouchHelper(new SimpleShadowItemTouchHelperCallback(adapter)).attachToRecyclerView(this);
+        new ShadowItemTouchHelper(new SimpleShadowItemTouchHelperCallback(adapter)).attachToRecyclerView(this);
 
         // create 50 expandable items
         for (int i = 0; i < 50; i++) {

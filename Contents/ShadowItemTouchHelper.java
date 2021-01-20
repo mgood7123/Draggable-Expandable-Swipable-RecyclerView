@@ -64,7 +64,7 @@ import java.util.List;
  * {@link Callback} class or implementing {@link ViewDropHandler}
  * interface in your LayoutManager.
  * <p>
- * By default, ItemTouchHelper moves the items' translateX/Y properties to reposition them. You can
+ * By default, ShadowItemTouchHelper moves the items' translateX/Y properties to reposition them. You can
  * customize these behaviors by overriding {@link Callback#onChildDraw(Canvas, RecyclerView,
  * ViewHolder, float, float, int, boolean)}
  * or {@link Callback#onChildDrawOver(Canvas, RecyclerView, ViewHolder, float, float, int,
@@ -72,7 +72,7 @@ import java.util.List;
  * <p/>
  * Most of the time you only need to override <code>onChildDraw</code>.
  */
-public class ItemTouchHelper extends RecyclerView.ItemDecoration
+public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
         implements RecyclerView.OnChildAttachStateChangeListener {
 
     /**
@@ -110,7 +110,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     public static final int END = RIGHT << 2;
 
     /**
-     * ItemTouchHelper is in idle state. At this state, either there is no related motion event by
+     * ShadowItemTouchHelper is in idle state. At this state, either there is no related motion event by
      * the user or latest motion events have not yet triggered a swipe or drag.
      */
     public static final int ACTION_STATE_IDLE = 0;
@@ -146,7 +146,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     @SuppressWarnings("WeakerAccess")
     public static final int ANIMATION_TYPE_DRAG = 1 << 3;
 
-    private static final String TAG = "ItemTouchHelper";
+    private static final String TAG = "ShadowItemTouchHelper";
 
     private static final boolean DEBUG = false;
 
@@ -192,12 +192,12 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     float mInitialTouchY;
 
     /**
-     * Set when ItemTouchHelper is assigned to a RecyclerView.
+     * Set when ShadowItemTouchHelper is assigned to a RecyclerView.
      */
     private float mSwipeEscapeVelocity;
 
     /**
-     * Set when ItemTouchHelper is assigned to a RecyclerView.
+     * Set when ShadowItemTouchHelper is assigned to a RecyclerView.
      */
     private float mMaxSwipeVelocity;
 
@@ -224,7 +224,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     int mActivePointerId = ACTIVE_POINTER_ID_NONE;
 
     /**
-     * Developer callback which controls the behavior of ItemTouchHelper.
+     * Developer callback which controls the behavior of ShadowItemTouchHelper.
      */
     @NonNull
     Callback mCallback;
@@ -441,15 +441,15 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     private long mDragScrollStartTimeInMs;
 
     /**
-     * Creates an ItemTouchHelper that will work with the given Callback.
+     * Creates an ShadowItemTouchHelper that will work with the given Callback.
      * <p>
-     * You can attach ItemTouchHelper to a RecyclerView via
+     * You can attach ShadowItemTouchHelper to a RecyclerView via
      * {@link #attachToRecyclerView(RecyclerView)}. Upon attaching, it will add an item decoration,
      * an onItemTouchListener and a Child attach / detach listener to the RecyclerView.
      *
      * @param callback The Callback which controls the behavior of this touch helper.
      */
-    public ItemTouchHelper(@NonNull Callback callback) {
+    public ShadowItemTouchHelper(@NonNull Callback callback) {
         mCallback = callback;
     }
 
@@ -461,12 +461,12 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     }
 
     /**
-     * Attaches the ItemTouchHelper to the provided RecyclerView. If TouchHelper is already
+     * Attaches the ShadowItemTouchHelper to the provided RecyclerView. If TouchHelper is already
      * attached to a RecyclerView, it will first detach from the previous one. You can call this
      * method with {@code null} to detach it from the current RecyclerView.
      *
      * @param recyclerView The RecyclerView instance to which you want to add this helper or
-     *                     {@code null} if you want to remove ItemTouchHelper from the current
+     *                     {@code null} if you want to remove ShadowItemTouchHelper from the current
      *                     RecyclerView.
      */
     public void attachToRecyclerView(@Nullable RecyclerView recyclerView) {
@@ -1071,17 +1071,17 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     }
 
     /**
-     * Starts dragging the provided ViewHolder. By default, ItemTouchHelper starts a drag when a
+     * Starts dragging the provided ViewHolder. By default, ShadowItemTouchHelper starts a drag when a
      * View is long pressed. You can disable that behavior by overriding
      * {@link Callback#isLongPressDragEnabled()}.
      * <p>
      * For this method to work:
      * <ul>
      * <li>The provided ViewHolder must be a child of the RecyclerView to which this
-     * ItemTouchHelper
+     * ShadowItemTouchHelper
      * is attached.</li>
      * <li>{@link Callback} must have dragging enabled.</li>
-     * <li>There must be a previous touch event that was reported to the ItemTouchHelper
+     * <li>There must be a previous touch event that was reported to the ShadowItemTouchHelper
      * through RecyclerView's ItemTouchListener mechanism. As long as no other ItemTouchListener
      * grabs previous events, this should work as expected.</li>
      * </ul>
@@ -1111,7 +1111,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
         if (viewHolder.itemView.getParent() != mRecyclerView) {
             Log.e(TAG, "Start drag has been called with a view holder which is not a child of "
-                    + "the RecyclerView which is controlled by this ItemTouchHelper.");
+                    + "the RecyclerView which is controlled by this ShadowItemTouchHelper.");
             return;
         }
         obtainVelocityTracker();
@@ -1120,7 +1120,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     }
 
     /**
-     * Starts swiping the provided ViewHolder. By default, ItemTouchHelper starts swiping a View
+     * Starts swiping the provided ViewHolder. By default, ShadowItemTouchHelper starts swiping a View
      * when user swipes their finger (or mouse pointer) over the View. You can disable this
      * behavior
      * by overriding {@link Callback}
@@ -1128,9 +1128,9 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
      * For this method to work:
      * <ul>
      * <li>The provided ViewHolder must be a child of the RecyclerView to which this
-     * ItemTouchHelper is attached.</li>
+     * ShadowItemTouchHelper is attached.</li>
      * <li>{@link Callback} must have swiping enabled.</li>
-     * <li>There must be a previous touch event that was reported to the ItemTouchHelper
+     * <li>There must be a previous touch event that was reported to the ShadowItemTouchHelper
      * through RecyclerView's ItemTouchListener mechanism. As long as no other ItemTouchListener
      * grabs previous events, this should work as expected.</li>
      * </ul>
@@ -1158,7 +1158,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
         if (viewHolder.itemView.getParent() != mRecyclerView) {
             Log.e(TAG, "Start swipe has been called with a view holder which is not a child of "
-                    + "the RecyclerView controlled by this ItemTouchHelper.");
+                    + "the RecyclerView controlled by this ShadowItemTouchHelper.");
             return;
         }
         obtainVelocityTracker();
@@ -1341,12 +1341,12 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
 
     /**
      * An interface which can be implemented by LayoutManager for better integration with
-     * {@link ItemTouchHelper}.
+     * {@link ShadowItemTouchHelper}.
      */
     public interface ViewDropHandler {
 
         /**
-         * Called by the {@link ItemTouchHelper} after a View is dropped over another View.
+         * Called by the {@link ShadowItemTouchHelper} after a View is dropped over another View.
          * <p>
          * A LayoutManager should implement this interface to get ready for the upcoming move
          * operation.
@@ -1368,7 +1368,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
     }
 
     /**
-     * This class is the contract between ItemTouchHelper and your application. It lets you control
+     * This class is the contract between ShadowItemTouchHelper and your application. It lets you control
      * which touch behaviors are enabled per each ViewHolder and also receive callbacks when user
      * performs these actions.
      * <p>
@@ -1379,7 +1379,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
      * {@link #makeMovementFlags(int, int)} to easily construct it. Alternatively, you can use
      * {@link SimpleCallback}.
      * <p>
-     * If user drags an item, ItemTouchHelper will call
+     * If user drags an item, ShadowItemTouchHelper will call
      * {@link Callback#onMove(RecyclerView, ViewHolder, ViewHolder)
      * onMove(recyclerView, dragged, target)}.
      * Upon receiving this callback, you should move the item from the old position
@@ -1393,7 +1393,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
      * {@link #chooseDropTarget(ViewHolder, List, int, int)} to select a
      * custom drop target.
      * <p>
-     * When a View is swiped, ItemTouchHelper animates it until it goes out of bounds, then calls
+     * When a View is swiped, ShadowItemTouchHelper animates it until it goes out of bounds, then calls
      * {@link #onSwiped(ViewHolder, int)}. At this point, you should update your
      * adapter (e.g. remove the item) and call related Adapter#notify event.
      */
@@ -1510,7 +1510,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * This flag is composed of 3 sets of 8 bits, where first 8 bits are for IDLE state, next
          * 8 bits are for SWIPE state and third 8 bits are for DRAG state.
          * Each 8 bit sections can be constructed by simply OR'ing direction flags defined in
-         * {@link ItemTouchHelper}.
+         * {@link ShadowItemTouchHelper}.
          * <p>
          * For example, if you want it to allow swiping LEFT and RIGHT but only allow starting to
          * swipe by swiping RIGHT, you can return:
@@ -1520,7 +1520,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * This means, allow right movement while IDLE and allow right and left movement while
          * swiping.
          *
-         * @param recyclerView The RecyclerView to which ItemTouchHelper is attached.
+         * @param recyclerView The RecyclerView to which ShadowItemTouchHelper is attached.
          * @param viewHolder   The ViewHolder for which the movement information is necessary.
          * @return flags specifying which movements are allowed on this ViewHolder.
          * @see #makeMovementFlags(int, int)
@@ -1584,7 +1584,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * <p>
          * Default implementation returns true.
          *
-         * @param recyclerView The RecyclerView to which ItemTouchHelper is attached to.
+         * @param recyclerView The RecyclerView to which ShadowItemTouchHelper is attached to.
          * @param current      The ViewHolder that user is dragging.
          * @param target       The ViewHolder which is below the dragged ViewHolder.
          * @return True if the dragged ViewHolder can be replaced with the target ViewHolder, false
@@ -1597,17 +1597,17 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Called when ItemTouchHelper wants to move the dragged item from its old position to
+         * Called when ShadowItemTouchHelper wants to move the dragged item from its old position to
          * the new position.
          * <p>
-         * If this method returns true, ItemTouchHelper assumes {@code viewHolder} has been moved
+         * If this method returns true, ShadowItemTouchHelper assumes {@code viewHolder} has been moved
          * to the adapter position of {@code target} ViewHolder
          * ({@link ViewHolder#getAdapterPosition()
          * ViewHolder#getAdapterPosition()}).
          * <p>
          * If you don't support drag & drop, this method will never be called.
          *
-         * @param recyclerView The RecyclerView to which ItemTouchHelper is attached to.
+         * @param recyclerView The RecyclerView to which ShadowItemTouchHelper is attached to.
          * @param viewHolder   The ViewHolder which is being dragged by the user.
          * @param target       The ViewHolder over which the currently active item is being
          *                     dragged.
@@ -1632,9 +1632,9 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         @Override
         public boolean onDrag(View v, DragEvent event) {
             //noinspection unchecked
-            Pair<ItemTouchHelper, ViewHolder> data = (Pair<ItemTouchHelper, ViewHolder>) event.getLocalState();
+            Pair<ShadowItemTouchHelper, ViewHolder> data = (Pair<ShadowItemTouchHelper, ViewHolder>) event.getLocalState();
 
-            ItemTouchHelper itemTouchHelper = data.first;
+            ShadowItemTouchHelper itemTouchHelper = data.first;
             ViewHolder vh = data.second;
             final int action = event.getAction();
             switch(action) {
@@ -1691,13 +1691,13 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Returns whether ItemTouchHelper should start a drag and drop operation if an item is
+         * Returns whether ShadowItemTouchHelper should start a drag and drop operation if an item is
          * long pressed.
          * <p>
          * Default value returns true but you may want to disable this if you want to start
          * dragging on a custom view touch using {@link #startDrag(ViewHolder)}.
          *
-         * @return True if ItemTouchHelper should start dragging an item when it is long pressed,
+         * @return True if ShadowItemTouchHelper should start dragging an item when it is long pressed,
          * false otherwise. Default value is <code>true</code>.
          * @see #startDrag(ViewHolder)
          */
@@ -1706,13 +1706,13 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Returns whether ItemTouchHelper should start a swipe operation if a pointer is swiped
+         * Returns whether ShadowItemTouchHelper should start a swipe operation if a pointer is swiped
          * over the View.
          * <p>
          * Default value returns true but you may want to disable this if you want to start
          * swiping on a custom view touch using {@link #startSwipe(ViewHolder)}.
          *
-         * @return True if ItemTouchHelper should start swiping an item when user swipes a pointer
+         * @return True if ShadowItemTouchHelper should start swiping an item when user swipes a pointer
          * over the View, false otherwise. Default value is <code>true</code>.
          * @see #startSwipe(ViewHolder)
          */
@@ -1721,7 +1721,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * When finding views under a dragged view, by default, ItemTouchHelper searches for views
+         * When finding views under a dragged view, by default, ShadowItemTouchHelper searches for views
          * that overlap with the dragged View. By overriding this method, you can extend or shrink
          * the search box.
          *
@@ -1750,7 +1750,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
 
         /**
          * Returns the fraction that the user should move the View to be considered as it is
-         * dragged. After a view is moved this amount, ItemTouchHelper starts checking for Views
+         * dragged. After a view is moved this amount, ShadowItemTouchHelper starts checking for Views
          * below it for a possible drop.
          *
          * @param viewHolder The ViewHolder that is being dragged.
@@ -1766,7 +1766,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * Defines the minimum velocity which will be considered as a swipe action by the user.
          * <p>
          * You can increase this value to make it harder to swipe or decrease it to make it easier.
-         * Keep in mind that ItemTouchHelper also checks the perpendicular velocity and makes sure
+         * Keep in mind that ShadowItemTouchHelper also checks the perpendicular velocity and makes sure
          * current direction velocity is larger then the perpendicular one. Otherwise, user's
          * movement is ambiguous. You can change the threshold by overriding
          * {@link #getSwipeVelocityThreshold(float)}.
@@ -1777,7 +1777,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * multiplier.
          *
          * @param defaultValue The default value (in pixels per second) used by the
-         *                     ItemTouchHelper.
+         *                     ShadowItemTouchHelper.
          * @return The minimum swipe velocity. The default implementation returns the
          * <code>defaultValue</code> parameter.
          * @see #getSwipeVelocityThreshold(float)
@@ -1789,9 +1789,9 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Defines the maximum velocity ItemTouchHelper will ever calculate for pointer movements.
+         * Defines the maximum velocity ShadowItemTouchHelper will ever calculate for pointer movements.
          * <p>
-         * To consider a movement as swipe, ItemTouchHelper requires it to be larger than the
+         * To consider a movement as swipe, ShadowItemTouchHelper requires it to be larger than the
          * perpendicular movement. If both directions reach to the max threshold, none of them will
          * be considered as a swipe because it is usually an indication that user rather tried to
          * scroll then swipe.
@@ -1802,7 +1802,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * will be easier for the user to swipe diagonally and if you decrease the value, user will
          * need to make a rather straight finger movement to trigger a swipe.
          *
-         * @param defaultValue The default value(in pixels per second) used by the ItemTouchHelper.
+         * @param defaultValue The default value(in pixels per second) used by the ShadowItemTouchHelper.
          * @return The velocity cap for pointer movements. The default implementation returns the
          * <code>defaultValue</code> parameter.
          * @see #getSwipeEscapeVelocity(float)
@@ -1813,7 +1813,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Called by ItemTouchHelper to select a drop target from the list of ViewHolders that
+         * Called by ShadowItemTouchHelper to select a drop target from the list of ViewHolders that
          * are under the dragged View.
          * <p>
          * Default implementation filters the View with which dragged item have changed position
@@ -1904,9 +1904,9 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * <p>
          * If you don't support swiping, this method will never be called.
          * <p>
-         * ItemTouchHelper will keep a reference to the View until it is detached from
+         * ShadowItemTouchHelper will keep a reference to the View until it is detached from
          * RecyclerView.
-         * As soon as it is detached, ItemTouchHelper will call
+         * As soon as it is detached, ShadowItemTouchHelper will call
          * {@link #clearView(RecyclerView, ViewHolder)}.
          *
          * @param viewHolder The ViewHolder which has been swiped by the user.
@@ -1922,15 +1922,15 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         public abstract void onSwiped(@NonNull ViewHolder viewHolder, int direction);
 
         /**
-         * Called when the ViewHolder swiped or dragged by the ItemTouchHelper is changed.
+         * Called when the ViewHolder swiped or dragged by the ShadowItemTouchHelper is changed.
          * <p/>
          * If you override this method, you should call super.
          *
          * @param viewHolder  The new ViewHolder that is being swiped or dragged. Might be null if
          *                    it is cleared.
-         * @param actionState One of {@link ItemTouchHelper#ACTION_STATE_IDLE},
-         *                    {@link ItemTouchHelper#ACTION_STATE_SWIPE} or
-         *                    {@link ItemTouchHelper#ACTION_STATE_DRAG}.
+         * @param actionState One of {@link ShadowItemTouchHelper#ACTION_STATE_IDLE},
+         *                    {@link ShadowItemTouchHelper#ACTION_STATE_SWIPE} or
+         *                    {@link ShadowItemTouchHelper#ACTION_STATE_DRAG}.
          * @see #clearView(RecyclerView, ViewHolder)
          */
         public void onSelectedChanged(@Nullable ViewHolder viewHolder, int actionState) {
@@ -1949,7 +1949,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         /**
          * Called when {@link #onMove(RecyclerView, ViewHolder, ViewHolder)} returns true.
          * <p>
-         * ItemTouchHelper does not create an extra Bitmap or View while dragging, instead, it
+         * ShadowItemTouchHelper does not create an extra Bitmap or View while dragging, instead, it
          * modifies the existing View. Because of this reason, it is important that the View is
          * still part of the layout after it is moved. This may not work as intended when swapped
          * Views are close to RecyclerView bounds or there are gaps between them (e.g. other Views
@@ -1966,7 +1966,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * removed by the LayoutManager if the move causes the View to go out of bounds. In that
          * case, drag will end prematurely.
          *
-         * @param recyclerView The RecyclerView controlled by the ItemTouchHelper.
+         * @param recyclerView The RecyclerView controlled by the ShadowItemTouchHelper.
          * @param viewHolder   The ViewHolder under user's control.
          * @param fromPos      The previous adapter position of the dragged item (before it was
          *                     moved).
@@ -2063,7 +2063,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Called by the ItemTouchHelper when the user interaction with an element is over and it
+         * Called by the ShadowItemTouchHelper when the user interaction with an element is over and it
          * also completed its animation.
          * <p>
          * This is a good place to clear all changes on the View that was done in
@@ -2072,7 +2072,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * boolean)} or
          * {@link #onChildDrawOver(Canvas, RecyclerView, ViewHolder, float, float, int, boolean)}.
          *
-         * @param recyclerView The RecyclerView which is controlled by the ItemTouchHelper.
+         * @param recyclerView The RecyclerView which is controlled by the ShadowItemTouchHelper.
          * @param viewHolder   The View that was interacted by the user.
          */
         public void clearView(@NonNull RecyclerView recyclerView, @NonNull ViewHolder viewHolder) {
@@ -2106,21 +2106,21 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Called by ItemTouchHelper on RecyclerView's onDraw callback.
+         * Called by ShadowItemTouchHelper on RecyclerView's onDraw callback.
          * <p>
          * If you would like to customize how your View's respond to user interactions, this is
          * a good place to override.
          * <p>
          * Default implementation translates the child by the given <code>dX</code>,
          * <code>dY</code>.
-         * ItemTouchHelper also takes care of drawing the child after other children if it is being
+         * ShadowItemTouchHelper also takes care of drawing the child after other children if it is being
          * dragged. This is done using child re-ordering mechanism. On platforms prior to L, this
          * is
          * achieved via android.view.ViewGroup#getChildDrawingOrder(int, int) and on L
          * and after, it changes View's elevation value to be greater than all other children.)
          *
          * @param c                 The canvas which RecyclerView is drawing its children
-         * @param recyclerView      The RecyclerView to which ItemTouchHelper is attached to
+         * @param recyclerView      The RecyclerView to which ShadowItemTouchHelper is attached to
          * @param viewHolder        The ViewHolder which is being interacted by the User or it was
          *                          interacted and simply animating to its original position
          * @param dX                The amount of horizontal displacement caused by user's action
@@ -2153,21 +2153,21 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Called by ItemTouchHelper on RecyclerView's onDraw callback.
+         * Called by ShadowItemTouchHelper on RecyclerView's onDraw callback.
          * <p>
          * If you would like to customize how your View's respond to user interactions, this is
          * a good place to override.
          * <p>
          * Default implementation translates the child by the given <code>dX</code>,
          * <code>dY</code>.
-         * ItemTouchHelper also takes care of drawing the child after other children if it is being
+         * ShadowItemTouchHelper also takes care of drawing the child after other children if it is being
          * dragged. This is done using child re-ordering mechanism. On platforms prior to L, this
          * is
          * achieved via android.view.ViewGroup#getChildDrawingOrder(int, int) and on L
          * and after, it changes View's elevation value to be greater than all other children.)
          *
          * @param c                 The canvas which RecyclerView is drawing its children
-         * @param recyclerView      The RecyclerView to which ItemTouchHelper is attached to
+         * @param recyclerView      The RecyclerView to which ShadowItemTouchHelper is attached to
          * @param viewHolder        The ViewHolder which is being interacted by the User or it was
          *                          interacted and simply animating to its original position
          * @param dX                The amount of horizontal displacement caused by user's action
@@ -2185,7 +2185,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Called by the ItemTouchHelper when user action finished on a ViewHolder and now the View
+         * Called by the ShadowItemTouchHelper when user action finished on a ViewHolder and now the View
          * will be animated to its final position.
          * <p>
          * Default implementation uses ItemAnimator's duration values. If
@@ -2196,7 +2196,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * {@code DEFAULT_DRAG_ANIMATION_DURATION} or {@code DEFAULT_SWIPE_ANIMATION_DURATION}
          * depending on the animation type.
          *
-         * @param recyclerView  The RecyclerView to which the ItemTouchHelper is attached to.
+         * @param recyclerView  The RecyclerView to which the ShadowItemTouchHelper is attached to.
          * @param animationType The type of animation. Is one of {@link #ANIMATION_TYPE_DRAG},
          *                      {@link #ANIMATION_TYPE_SWIPE_CANCEL} or
          *                      {@link #ANIMATION_TYPE_SWIPE_SUCCESS}.
@@ -2218,7 +2218,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         /**
-         * Called by the ItemTouchHelper when user is dragging a view out of bounds.
+         * Called by the ShadowItemTouchHelper when user is dragging a view out of bounds.
          * <p>
          * You can override this method to decide how much RecyclerView should scroll in response
          * to this action. Default implementation calculates a value based on the amount of View
@@ -2226,7 +2226,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * the faster the list will scroll. Similarly, the larger portion of the View is out of
          * bounds, the faster the RecyclerView will scroll.
          *
-         * @param recyclerView        The RecyclerView instance to which ItemTouchHelper is
+         * @param recyclerView        The RecyclerView instance to which ShadowItemTouchHelper is
          *                            attached to.
          * @param viewSize            The total size of the View in scroll direction, excluding
          *                            item decorations.
@@ -2270,9 +2270,9 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
      * onSwiped depending on your use case.
      *
      * <pre>
-     * ItemTouchHelper mIth = new ItemTouchHelper(
-     *     new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,
-     *         ItemTouchHelper.LEFT) {
+     * ShadowItemTouchHelper mIth = new ShadowItemTouchHelper(
+     *     new ShadowItemTouchHelper.SimpleCallback(ShadowItemTouchHelper.UP | ShadowItemTouchHelper.DOWN,
+     *         ShadowItemTouchHelper.LEFT) {
      *         public boolean onMove(RecyclerView recyclerView,
      *             ViewHolder viewHolder, ViewHolder target) {
      *             final int fromPos = viewHolder.getAdapterPosition();
@@ -2340,7 +2340,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * Default implementation returns the swipe directions that was set via constructor or
          * {@link #setDefaultSwipeDirs(int)}.
          *
-         * @param recyclerView The RecyclerView to which the ItemTouchHelper is attached to.
+         * @param recyclerView The RecyclerView to which the ShadowItemTouchHelper is attached to.
          * @param viewHolder   The ViewHolder for which the swipe direction is queried.
          * @return A binary OR of direction flags.
          */
@@ -2355,7 +2355,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
          * Default implementation returns the drag directions that was set via constructor or
          * {@link #setDefaultDragDirs(int)}.
          *
-         * @param recyclerView The RecyclerView to which the ItemTouchHelper is attached to.
+         * @param recyclerView The RecyclerView to which the ShadowItemTouchHelper is attached to.
          * @param viewHolder   The ViewHolder for which the swipe direction is queried.
          * @return A binary OR of direction flags.
          */
@@ -2437,7 +2437,7 @@ public class ItemTouchHelper extends RecyclerView.ItemDecoration
                         if (mCallback.isLongPressDragEnabled()) {
                             View selected = vh.itemView;
                             View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(selected);
-                            selected.startDragAndDrop(null, shadowBuilder, new Pair<>(ItemTouchHelper.this, vh), 0);
+                            selected.startDragAndDrop(null, shadowBuilder, new Pair<>(ShadowItemTouchHelper.this, vh), 0);
                         }
                     }
                 }
