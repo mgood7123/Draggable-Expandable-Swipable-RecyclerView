@@ -1663,31 +1663,73 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         AtomicBoolean scroll = new AtomicBoolean(false);
-        AtomicInteger scrollValue = new AtomicInteger(0);
 
-        void createThread() {
-            if (thread != null) stopThread();
-            monitor.set(true);
-            thread = new Thread(() -> {
-                while (monitor.get()) {
-                    if (scroll.get()) {
-                        int v = scrollValue.get();
-                        Log.d(TAG, "createThread: scrolling by " + v);
-                        mRecyclerView.smoothScrollBy(0, v);
+        /**
+         * When user drags a view to the edge, we start scrolling the LayoutManager as long as View
+         * is partially out of bounds.
+         */
+        @SuppressWarnings("WeakerAccess") /* synthetic access */
+        final Runnable mScrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mSelected != null && scrollIfNecessary()) {
+                    if (mSelected != null) { //it might be lost during scrolling
+//                        moveIfNecessary(mSelected);
                     }
-                    mRecyclerView.invalidate();
-                    while(true) {
-                        try {
-                            Thread.sleep(50, 0);
-                        } catch (InterruptedException e) {
-                            continue;
-                        }
-                        break;
-                    }
+                    mRecyclerView.removeCallbacks(mScrollRunnable);
+                    ViewCompat.postOnAnimation(mRecyclerView, this);
                 }
-            });
-            thread.start();
+            }
+        };
+
+        /**
+         * If user drags the view to the edge, trigger a scroll if necessary.
+         */
+        @SuppressWarnings("WeakerAccess") /* synthetic access */
+        boolean scrollIfNecessary() {
+            if (mSelected == null) {
+                mDragScrollStartTimeInMs = Long.MIN_VALUE;
+                return false;
+            }
+            final long now = System.currentTimeMillis();
+            final long scrollDuration = mDragScrollStartTimeInMs
+                    == Long.MIN_VALUE ? 0 : now - mDragScrollStartTimeInMs;
+            RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
+            if (mTmpRect == null) {
+                mTmpRect = new Rect();
+            }
+            int scrollX = 0;
+            int scrollY = 0;
+            lm.calculateItemDecorationsForChild(mSelected.itemView, mTmpRect);
+            if (lm.canScrollHorizontally()) {
+                int width = mRecyclerView.getMeasuredWidth();
+                if (width - x.get() < 200) {
+                    scrollX = (int) (mSelected.itemView.getWidth() * 0.2);
+                } else if (width - x.get() > width - 200) {
+                    scrollX = (int) (-mSelected.itemView.getWidth() * 0.2);
+                }
+            }
+            if (lm.canScrollVertically()) {
+                int height = mRecyclerView.getMeasuredHeight();
+                if (height - y.get() < 200) {
+                    scrollY = (int) (mSelected.itemView.getHeight() * 0.2);
+                } else if (height - y.get() > height - 200) {
+                    scrollY = (int) (-mSelected.itemView.getHeight() * 0.2);
+                }
+            }
+            if (scrollX != 0 || scrollY != 0) {
+                if (mDragScrollStartTimeInMs == Long.MIN_VALUE) {
+                    mDragScrollStartTimeInMs = now;
+                }
+                mRecyclerView.scrollBy(scrollX, scrollY);
+                return true;
+            }
+            mDragScrollStartTimeInMs = Long.MIN_VALUE;
+            return false;
         }
+
+        AtomicInteger x = new AtomicInteger(0);
+        AtomicInteger y = new AtomicInteger(0);
 
         /**
          * Called when a drag event is dispatched to a view. This allows listeners
@@ -1729,8 +1771,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                     Log.d(TAG, "onDrag: ENTERED");
                     mSelected = data.second;
                     scroll.set(false);
-                    scrollValue.set(0);
-                    createThread();
+//                    createThread();
                     return true;
 
                 case DragEvent.ACTION_DROP:
@@ -1739,40 +1780,22 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DRAG_ENDED:
                     Log.d(TAG, "onDrag: ENDED");
                     mSelected = null;
-                    stopThread();
+//                    stopThread();
                     scroll.set(false);
-                    scrollValue.set(0);
                     return true;
                 case DragEvent.ACTION_DRAG_EXITED:
                     Log.d(TAG, "onDrag: EXITED");
                     mSelected = null;
-                    stopThread();
+//                    stopThread();
                     scroll.set(false);
-                    scrollValue.set(0);
                     return true;
 
                 case DragEvent.ACTION_DRAG_LOCATION:
-                    float x = event.getX();
-                    float y = event.getY();
-                    // Calculate the distance moved
-                    mDx = x - startedX;
-                    mDy = y - startedY;
-                    if (hasLeftFlag) mDx = Math.max(0, mDx);
-                    if (hasRightFlag) mDx = Math.min(0, mDx);
-                    if (hasUpFlag) mDy = Math.max(0, mDy);
-                    if (hasDownFlag) mDy = Math.min(0, mDy);
-                    int height = itemTouchHelper.mRecyclerView.getMeasuredHeight();
-
-                    if (height - y < 200) {
-                        scrollValue.set(mSelected.itemView.getHeight());
-                        scroll.set(true);
-                    } else if (height - y > height - 200) {
-                        scrollValue.set(-mSelected.itemView.getHeight());
-                        scroll.set(true);
-                    } else {
-                        scroll.set(false);
-                        scrollValue.set(0);
-                    }
+                    x.set((int) event.getX());
+                    y.set((int) event.getY());
+                    mRecyclerView.removeCallbacks(mScrollRunnable);
+                    mScrollRunnable.run();
+                    mRecyclerView.invalidate();
                     return true;
             }
             return false;
