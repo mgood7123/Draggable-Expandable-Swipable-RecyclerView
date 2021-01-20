@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ExpandableView;
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.RecyclerListAdapter;
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.SimpleItemTouchHelperCallback;
-import smallville7123.example.taskbuilder.MainActivity;
 
 public class ExampleRecyclerView extends RecyclerView {
 

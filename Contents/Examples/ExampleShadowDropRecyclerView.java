@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ExpandableView;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper;
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.RecyclerListAdapter;
+import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper;
 import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.SimpleShadowItemTouchHelperCallback;
 
 import static android.R.drawable.ic_menu_delete;

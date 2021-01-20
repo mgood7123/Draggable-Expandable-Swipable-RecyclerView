@@ -2,9 +2,7 @@ package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerVi
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;

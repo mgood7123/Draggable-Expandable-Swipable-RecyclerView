@@ -3,9 +3,7 @@ package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerVi
 import android.graphics.Color;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class ViewHolder extends RecyclerView.ViewHolder {
