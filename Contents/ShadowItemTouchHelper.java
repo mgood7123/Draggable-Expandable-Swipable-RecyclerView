@@ -22,6 +22,7 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.Log;
@@ -48,6 +49,8 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is a utility class to add swipe to dismiss and drag & drop support to RecyclerView.
@@ -1619,6 +1622,73 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 @NonNull ViewHolder viewHolder, @NonNull ViewHolder target);
 
         boolean started = false;
+        int startedFlags;
+        int startedX;
+        int startedY;
+        ViewHolder mSelected;
+        ShadowItemTouchHelper itemTouchHelper;
+        int absoluteMovementFlags;
+        int dragFlags;
+        boolean hasDragFlags;
+        int mSelectedFlags;
+        boolean hasUpFlag;
+        boolean hasDownFlag;
+        boolean hasLeftFlag;
+        boolean hasRightFlag;
+        float mDx;
+        float mDy;
+        private Rect mTmpRect;
+        private long mDragScrollStartTimeInMs;
+        RecyclerView mRecyclerView;
+        Callback mCallback;
+
+
+        Thread thread;
+        AtomicBoolean monitor = new AtomicBoolean(false);
+        final Object lock = new Object();
+
+        void stopThread() {
+            if (thread != null) {
+                monitor.set(false);
+                while (true) {
+                    try {
+                        thread.join();
+                    } catch (InterruptedException e) {
+                        continue;
+                    }
+                    break;
+                }
+                thread = null;
+            }
+        }
+
+        AtomicBoolean scroll = new AtomicBoolean(false);
+        AtomicInteger scrollValue = new AtomicInteger(0);
+
+        void createThread() {
+            if (thread != null) stopThread();
+            monitor.set(true);
+            thread = new Thread(() -> {
+                while (monitor.get()) {
+                    if (scroll.get()) {
+                        int v = scrollValue.get();
+                        Log.d(TAG, "createThread: scrolling by " + v);
+                        mRecyclerView.smoothScrollBy(0, v);
+                    }
+                    mRecyclerView.invalidate();
+                    while(true) {
+                        try {
+                            Thread.sleep(50, 0);
+                        } catch (InterruptedException e) {
+                            continue;
+                        }
+                        break;
+                    }
+                }
+            });
+            thread.start();
+        }
+
         /**
          * Called when a drag event is dispatched to a view. This allows listeners
          * to get a chance to override base View behavior.
@@ -1634,59 +1704,138 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             //noinspection unchecked
             Pair<ShadowItemTouchHelper, ViewHolder> data = (Pair<ShadowItemTouchHelper, ViewHolder>) event.getLocalState();
 
-            ShadowItemTouchHelper itemTouchHelper = data.first;
-            ViewHolder vh = data.second;
             final int action = event.getAction();
             switch(action) {
                 case DragEvent.ACTION_DRAG_STARTED:
+                    Log.d(TAG, "onDrag: STARTED");
+                    itemTouchHelper = data.first;
+                    mRecyclerView = itemTouchHelper.mRecyclerView;
+                    mCallback = itemTouchHelper.mCallback;
+                    mSelected = data.second;
+
+                    absoluteMovementFlags = mCallback.getAbsoluteMovementFlags(
+                            mRecyclerView, mSelected);
+                    dragFlags = absoluteMovementFlags & ACTION_MODE_DRAG_MASK;
+                    hasDragFlags = dragFlags != 0;
+                    mSelectedFlags = dragFlags >> (ACTION_MODE_DRAG_MASK * DIRECTION_FLAG_COUNT);
+                    hasLeftFlag = (mSelectedFlags & LEFT) != 0;
+                    hasRightFlag = (mSelectedFlags & RIGHT) != 0;
+                    hasUpFlag = (mSelectedFlags & UP) != 0;
+                    hasDownFlag = (mSelectedFlags & DOWN) != 0;
+                    startedX = mSelected.itemView.getLeft();
+                    startedY = mSelected.itemView.getTop();
                     return true;
                 case DragEvent.ACTION_DRAG_ENTERED:
-                    started = true;
+                    Log.d(TAG, "onDrag: ENTERED");
+                    mSelected = data.second;
+                    scroll.set(false);
+                    scrollValue.set(0);
+                    createThread();
                     return true;
 
                 case DragEvent.ACTION_DROP:
+                    Log.d(TAG, "onDrag: DROP");
+                    return true;
                 case DragEvent.ACTION_DRAG_ENDED:
+                    Log.d(TAG, "onDrag: ENDED");
+                    mSelected = null;
+                    stopThread();
+                    scroll.set(false);
+                    scrollValue.set(0);
+                    return true;
                 case DragEvent.ACTION_DRAG_EXITED:
-                    itemTouchHelper.mDx = itemTouchHelper.mDy = 0f;
-                    itemTouchHelper.select(null, ACTION_STATE_IDLE);
+                    Log.d(TAG, "onDrag: EXITED");
+                    mSelected = null;
+                    stopThread();
+                    scroll.set(false);
+                    scrollValue.set(0);
                     return true;
 
                 case DragEvent.ACTION_DRAG_LOCATION:
-                    if (started) {
-                        Log.d(TAG, "b itemTouchHelper.mInitialTouchY = [" + (itemTouchHelper.mInitialTouchY) + "]");
-                        itemTouchHelper.mInitialTouchX = event.getX();
-                        itemTouchHelper.mInitialTouchY = event.getY();
-                        Log.d(TAG, "a itemTouchHelper.mInitialTouchY = [" + (itemTouchHelper.mInitialTouchY) + "]");
-                        itemTouchHelper.mDx = itemTouchHelper.mDy = 0f;
-                        itemTouchHelper.select(vh, ACTION_STATE_DRAG);
-                        started = false;
-                    }
-
-                    final float x = event.getX();
-                    final float y = event.getY();
-
+                    float x = event.getX();
+                    float y = event.getY();
                     // Calculate the distance moved
-                    itemTouchHelper.mDx = x - itemTouchHelper.mInitialTouchX;
-                    itemTouchHelper.mDy = y - itemTouchHelper.mInitialTouchY;
-                    int directionFlags = itemTouchHelper.mSelectedFlags;
-                    if ((directionFlags & LEFT) == 0) {
-                        itemTouchHelper.mDx = Math.max(0, itemTouchHelper.mDx);
+                    mDx = x - startedX;
+                    mDy = y - startedY;
+                    if (hasLeftFlag) mDx = Math.max(0, mDx);
+                    if (hasRightFlag) mDx = Math.min(0, mDx);
+                    if (hasUpFlag) mDy = Math.max(0, mDy);
+                    if (hasDownFlag) mDy = Math.min(0, mDy);
+                    int height = itemTouchHelper.mRecyclerView.getMeasuredHeight();
+
+                    if (height - y < 200) {
+                        scrollValue.set(mSelected.itemView.getHeight());
+                        scroll.set(true);
+                    } else if (height - y > height - 200) {
+                        scrollValue.set(-mSelected.itemView.getHeight());
+                        scroll.set(true);
+                    } else {
+                        scroll.set(false);
+                        scrollValue.set(0);
                     }
-                    if ((directionFlags & RIGHT) == 0) {
-                        itemTouchHelper.mDx = Math.min(0, itemTouchHelper.mDx);
-                    }
-                    if ((directionFlags & UP) == 0) {
-                        itemTouchHelper.mDy = Math.max(0, itemTouchHelper.mDy);
-                    }
-                    if ((directionFlags & DOWN) == 0) {
-                        itemTouchHelper.mDy = Math.min(0, itemTouchHelper.mDy);
-                    }
-//                    itemTouchHelper.moveIfNecessary(vh);
-//                    itemTouchHelper.mRecyclerView.removeCallbacks(itemTouchHelper.mScrollRunnable);
-//                    itemTouchHelper.mScrollRunnable.run();
-                    itemTouchHelper.mRecyclerView.invalidate();
                     return true;
             }
+            return false;
+        }
+
+        boolean scroll(ShadowItemTouchHelper itemTouchHelper) {
+            final long now = System.currentTimeMillis();
+            final long scrollDuration = mDragScrollStartTimeInMs
+                    == Long.MIN_VALUE ? 0 : now - mDragScrollStartTimeInMs;
+            RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
+            if (mTmpRect == null) {
+                mTmpRect = new Rect();
+            }
+            int scrollX = 0;
+            int scrollY = 0;
+            lm.calculateItemDecorationsForChild(mSelected.itemView, mTmpRect);
+            if (lm.canScrollHorizontally()) {
+                int curX = (int) (startedX + mDx);
+                final int leftDiff = curX - mTmpRect.left - mRecyclerView.getPaddingLeft();
+                if (mDx < 0 && leftDiff < 0) {
+                    scrollX = leftDiff;
+                } else if (mDx > 0) {
+                    final int rightDiff =
+                            curX + mSelected.itemView.getWidth() + mTmpRect.right
+                                    - (mRecyclerView.getWidth() - mRecyclerView.getPaddingRight());
+                    if (rightDiff > 0) {
+                        scrollX = rightDiff;
+                    }
+                }
+            }
+            if (lm.canScrollVertically()) {
+                int curY = (int) (startedY + mDy);
+                final int topDiff = curY - mTmpRect.top - mRecyclerView.getPaddingTop();
+                if (mDy < 0 && topDiff < 0) {
+                    scrollY = topDiff;
+                } else if (mDy > 0) {
+                    final int bottomDiff = curY + mSelected.itemView.getHeight() + mTmpRect.bottom
+                            - (mRecyclerView.getHeight() - mRecyclerView.getPaddingBottom());
+                    if (bottomDiff > 0) {
+                        scrollY = bottomDiff;
+                    }
+                }
+            }
+            if (scrollX != 0) {
+                scrollX = mCallback.interpolateOutOfBoundsScroll(
+                        mRecyclerView,
+                        mSelected.itemView.getWidth(), scrollX,
+                        mRecyclerView.getWidth(), scrollDuration);
+            }
+            if (scrollY != 0) {
+                scrollY = mCallback.interpolateOutOfBoundsScroll(
+                        mRecyclerView,
+                        mSelected.itemView.getHeight(), scrollY,
+                        mRecyclerView.getHeight(), scrollDuration);
+            }
+            if (scrollX != 0 || scrollY != 0) {
+                if (mDragScrollStartTimeInMs == Long.MIN_VALUE) {
+                    mDragScrollStartTimeInMs = now;
+                }
+                mRecyclerView.scrollBy(scrollX, scrollY);
+                return true;
+            }
+            mDragScrollStartTimeInMs = Long.MIN_VALUE;
             return false;
         }
 
@@ -2436,7 +2585,20 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                         }
                         if (mCallback.isLongPressDragEnabled()) {
                             View selected = vh.itemView;
-                            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(selected);
+                            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(selected) {
+                                /**
+                                 * Draws the shadow image. The system creates the {@link Canvas} object
+                                 * based on the dimensions it received from the
+                                 * {@link #onProvideShadowMetrics(Point, Point)} callback.
+                                 *
+                                 * @param canvas A {@link Canvas} object in which to draw the shadow image.
+                                 */
+                                @Override
+                                public void onDrawShadow(Canvas canvas) {
+                                    super.onDrawShadow(canvas);
+                                    Log.d(TAG, "onDrawShadow() called with: canvas = [" + canvas + "]");
+                                }
+                            };
                             selected.startDragAndDrop(null, shadowBuilder, new Pair<>(ShadowItemTouchHelper.this, vh), 0);
                         }
                     }
