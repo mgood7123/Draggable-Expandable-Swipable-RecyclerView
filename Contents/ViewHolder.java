@@ -2,6 +2,7 @@ package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerVi
 
 import android.graphics.Color;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +17,7 @@ public class ViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void setItem(View view) {
+        if(view.getParent() != null) ((ViewGroup)view.getParent()).removeView(view);
         root.addView(view);
     }
 

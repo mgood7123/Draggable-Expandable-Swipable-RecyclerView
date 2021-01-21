@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -66,11 +67,10 @@ public class ExampleShadowDropRecyclerView extends RecyclerView {
         adapter = new RecyclerListAdapter();
         setAdapter(adapter);
         setLayoutManager(new LinearLayoutManager(context));
-
         new ShadowItemTouchHelper(new SimpleShadowItemTouchHelperCallback(adapter)).attachToRecyclerView(this);
 
         // create 50 expandable items
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 5; i++) {
             addItem("Header " + i, "Content " + i);
         }
     }

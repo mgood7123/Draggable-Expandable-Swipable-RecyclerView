@@ -20,6 +20,7 @@ package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerVi
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -27,6 +28,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
@@ -34,8 +36,11 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.Interpolator;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,9 +54,13 @@ import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import smallville7123.example.taskbuilder.TextViewUtils;
 
 /**
  * This is a utility class to add swipe to dismiss and drag & drop support to RecyclerView.
@@ -492,13 +501,17 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
     }
 
     private void setupCallbacks() {
-        ViewConfiguration vc = ViewConfiguration.get(mRecyclerView.getContext());
+        Context context = mRecyclerView.getContext();
+        ViewConfiguration vc = ViewConfiguration.get(context);
         mSlop = vc.getScaledTouchSlop();
         mRecyclerView.addItemDecoration(this);
         mRecyclerView.addOnItemTouchListener(mOnItemTouchListener);
         mRecyclerView.addOnChildAttachStateChangeListener(this);
         mRecyclerView.setOnDragListener(mCallback);
         startGestureDetection();
+        if (mCallback != null) {
+            mCallback.initToastList(context);
+        }
     }
 
     private void destroyCallbacks() {
@@ -1622,18 +1635,23 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
         public abstract boolean onMove(@NonNull RecyclerView recyclerView,
                 @NonNull ViewHolder viewHolder, @NonNull ViewHolder target);
 
+        ToastList toastList = new ToastList();
+        int dragStartedKey, dragEndedKey;
+        int dragEnteredKey, dragExitedKey;
+        int dragDropKey;
+
+        public void initToastList(Context context) {
+            dragStartedKey = toastList.add(context, "DragEvent: Drag Started", Toast.LENGTH_SHORT);
+            dragEndedKey = toastList.add(context, "DragEvent: Drag Ended", Toast.LENGTH_SHORT);
+            dragEnteredKey = toastList.add(context, "DragEvent: Drag Entered", Toast.LENGTH_SHORT);
+            dragExitedKey = toastList.add(context, "DragEvent: Drag Exited", Toast.LENGTH_SHORT);
+            dragDropKey = toastList.add(context, "DragEvent: Drag Drop", Toast.LENGTH_SHORT);
+        }
+
         int startedX;
         int startedY;
         ViewHolder mSelected;
         ShadowItemTouchHelper itemTouchHelper;
-        int absoluteMovementFlags;
-        int dragFlags;
-        boolean hasDragFlags;
-        int mSelectedFlags;
-        boolean hasUpFlag;
-        boolean hasDownFlag;
-        boolean hasLeftFlag;
-        boolean hasRightFlag;
         private Rect mTmpRect;
         private long mDragScrollStartTimeInMs;
         RecyclerView mRecyclerView;
@@ -1651,13 +1669,14 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             public void run() {
                 if (mSelected != null && scrollIfNecessary()) {
                     if (mSelected != null) { //it might be lost during scrolling
-//                        moveIfNecessary(mSelected);
+        //                        moveIfNecessary(mSelected);
                     }
                     mRecyclerView.removeCallbacks(mScrollRunnable);
                     ViewCompat.postOnAnimation(mRecyclerView, this);
                 }
             }
         };
+
 
         /**
          * If user drags the view to the edge, trigger a scroll if necessary.
@@ -1669,8 +1688,6 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 return false;
             }
             final long now = System.currentTimeMillis();
-            final long scrollDuration = mDragScrollStartTimeInMs
-                    == Long.MIN_VALUE ? 0 : now - mDragScrollStartTimeInMs;
             RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
             if (mTmpRect == null) {
                 mTmpRect = new Rect();
@@ -1705,6 +1722,8 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             return false;
         }
 
+        View selector;
+
         /**
          * Called when a drag event is dispatched to a view. This allows listeners
          * to get a chance to override base View behavior.
@@ -1723,40 +1742,55 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             final int action = event.getAction();
             switch(action) {
                 case DragEvent.ACTION_DRAG_STARTED:
+                    toastList.show(dragStartedKey);
                     Log.d(TAG, "onDrag: STARTED");
                     itemTouchHelper = data.first;
                     mRecyclerView = itemTouchHelper.mRecyclerView;
                     mCallback = itemTouchHelper.mCallback;
                     mSelected = data.second;
-
-                    absoluteMovementFlags = mCallback.getAbsoluteMovementFlags(
-                            mRecyclerView, mSelected);
-                    dragFlags = absoluteMovementFlags & ACTION_MODE_DRAG_MASK;
-                    hasDragFlags = dragFlags != 0;
-                    mSelectedFlags = dragFlags >> (ACTION_MODE_DRAG_MASK * DIRECTION_FLAG_COUNT);
-                    hasLeftFlag = (mSelectedFlags & LEFT) != 0;
-                    hasRightFlag = (mSelectedFlags & RIGHT) != 0;
-                    hasUpFlag = (mSelectedFlags & UP) != 0;
-                    hasDownFlag = (mSelectedFlags & DOWN) != 0;
                     startedX = mSelected.itemView.getLeft();
                     startedY = mSelected.itemView.getTop();
+                    if (selector == null) {
+                        selector = createSelector(mRecyclerView.getContext());
+                        attachSelector(selector);
+                    }
                     return true;
                 case DragEvent.ACTION_DRAG_ENTERED:
+                    toastList.show(dragEnteredKey);
                     Log.d(TAG, "onDrag: ENTERED");
                     mSelected = data.second;
+                    if (selector == null) {
+                        selector = createSelector(mRecyclerView.getContext());
+                        attachSelector(selector);
+                    }
                     return true;
 
                 case DragEvent.ACTION_DROP:
+                    toastList.show(dragDropKey);
                     Log.d(TAG, "onDrag: DROP");
                     mSelected = null;
+                    if (selector != null) {
+                        detachSelector(selector);
+                        selector = null;
+                    }
                     return true;
                 case DragEvent.ACTION_DRAG_ENDED:
+                    toastList.show(dragEndedKey);
                     Log.d(TAG, "onDrag: ENDED");
                     mSelected = null;
+                    if (selector != null) {
+                        detachSelector(selector);
+                        selector = null;
+                    }
                     return true;
                 case DragEvent.ACTION_DRAG_EXITED:
+                    toastList.show(dragExitedKey);
                     Log.d(TAG, "onDrag: EXITED");
                     mSelected = null;
+                    if (selector != null) {
+                        detachSelector(selector);
+                        selector = null;
+                    }
                     return true;
 
                 case DragEvent.ACTION_DRAG_LOCATION:
@@ -1764,11 +1798,49 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                     y = event.getY();
                     mRecyclerView.removeCallbacks(mScrollRunnable);
                     mScrollRunnable.run();
+                    checkItemInsert();
                     mRecyclerView.invalidate();
                     return true;
             }
             return false;
         }
+
+        ViewHolder findViewHolderUnder(float x, float y) {
+            View found = mRecyclerView.findChildViewUnder(x, y);
+            if (found != null) {
+                return mRecyclerView.findContainingViewHolder(found);
+            }
+            return null;
+        }
+
+        void checkItemInsert() {
+            if (mRecyclerView.isLayoutRequested() || mSelected == null) {
+                return;
+            }
+            ViewHolder item = findViewHolderUnder(x, y);
+            if (item == mSelected) return;
+            Log.d(TAG, "item = [" + (item) + "]");
+            if (item != null) {
+                RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
+                if (lm != null) {
+                    int selectorPosition = getSelectorPosition(selector);
+                    int itemPosition = item.getAdapterPosition();
+                    moveSelector(selector, selectorPosition, itemPosition);
+                }
+//                final int fromPosition = mSelected.getAdapterPosition();
+//                if (mCallback.onMove(mRecyclerView, mSelected, item)) {
+//                    // keep target visible
+//                    mCallback.onMoved(mRecyclerView, mSelected, fromPosition,
+//                            item, toPosition, (int) x, (int) y);
+//                }
+            }
+        }
+
+        public abstract View createSelector(Context context);
+        public abstract void attachSelector(View selector);
+        public abstract int getSelectorPosition(View selector);
+        public abstract void moveSelector(View selector, int fromPosition, int toPosition);
+        public abstract void detachSelector(View selector);
 
         /**
          * Returns whether ShadowItemTouchHelper should start a drag and drop operation if an item is

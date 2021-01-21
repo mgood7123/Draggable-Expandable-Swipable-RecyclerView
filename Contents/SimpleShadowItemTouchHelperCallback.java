@@ -1,8 +1,17 @@
 package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.lang.reflect.Array;
 import java.util.Collections;
 
 public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.Callback {
@@ -15,6 +24,45 @@ public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.C
 
     public SimpleShadowItemTouchHelperCallback(RecyclerListAdapter adapter) {
         mAdapter = adapter;
+    }
+
+    @Override
+    public View createSelector(Context context) {
+        TextView selector = new TextView(context);
+        selector.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f);
+        selector.setText("> Move Item Here");
+        selector.setTextColor(Color.GREEN);
+        selector.setLayoutParams(
+                new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+        );
+        return selector;
+    }
+
+    @Override
+    public void attachSelector(View selector) {
+        mAdapter.mItems.add(selector);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public int getSelectorPosition(View selector) {
+        return mAdapter.mItems.indexOf(selector);
+    }
+
+    @Override
+    public void moveSelector(View selector, int fromPosition, int toPosition) {
+        Log.d(TAG, "moveSelector() called with: selector = [" + selector + "], fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+//        Collections.swap(mAdapter.mItems, fromPosition, toPosition);
+//        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void detachSelector(View selector) {
+        mAdapter.mItems.remove(selector);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
