@@ -1752,8 +1752,8 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DRAG_STARTED:
                     if (DEBUG) {
                         toastList.show(dragStartedKey);
-                    }
                         Log.d(TAG, "onDrag: STARTED");
+                    }
                     mRecyclerView = dragInfo.shadowItemTouchHelper.mRecyclerView;
                     mCallback = dragInfo.shadowItemTouchHelper.mCallback;
                     if (dragInfo.adapterPosition == -1) {
@@ -1772,8 +1772,8 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DRAG_ENTERED:
                     if (DEBUG) {
                         toastList.show(dragEnteredKey);
-                    }
                         Log.d(TAG, "onDrag: ENTERED");
+                    }
                     if (selector == null) {
                         selector = createSelector(mRecyclerView.getContext());
                         attachSelector(selector);
@@ -1783,8 +1783,8 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DROP:
                     if (DEBUG) {
                         toastList.show(dragDropKey);
-                    }
                         Log.d(TAG, "onDrag: DROP");
+                    }
 
                     x = event.getX();
                     y = event.getY();
@@ -1798,8 +1798,8 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DRAG_ENDED:
                     if (DEBUG) {
                         toastList.show(dragEndedKey);
-                    }
                         Log.d(TAG, "onDrag: ENDED");
+                    }
                     dragInfo = null;
                     if (selector != null) {
                         detachSelector(selector);
@@ -1809,8 +1809,8 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DRAG_EXITED:
                     if (DEBUG) {
                         toastList.show(dragExitedKey);
-                    }
                         Log.d(TAG, "onDrag: EXITED");
+                    }
                     dragInfo = null;
                     if (selector != null) {
                         detachSelector(selector);
