@@ -2,13 +2,15 @@ package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerVi
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.DragEvent;
 import android.view.Gravity;
-import android.view.ViewGroup;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +25,7 @@ import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerVie
 
 import static android.R.drawable.ic_menu_delete;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper.Callback.getDragInfo;
 
 public class ExampleShadowDropRecyclerView extends RecyclerView {
 
@@ -36,20 +39,43 @@ public class ExampleShadowDropRecyclerView extends RecyclerView {
 
         ExampleShadowDropRecyclerView shadowDropRecyclerView = new ExampleShadowDropRecyclerView(activity);
 
-        LinearLayout layout = new LinearLayout(activity);
+        FrameLayout layout = new FrameLayout(activity);
         layout.addView(
                 shadowDropRecyclerView,
-                new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f)
+                new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         );
         layout.addView(
                 trash,
-                new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, 1f) {
+                new FrameLayout.LayoutParams(300, 300) {
                     {
-                        gravity = Gravity.RIGHT|Gravity.BOTTOM;
+                        gravity = Gravity.END|Gravity.BOTTOM;
                     }
                 }
         );
         activity.setContentView(layout);
+        trash.setOnDragListener(new OnDragListener() {
+            @Override
+            public boolean onDrag(View v, DragEvent event) {
+                final int action = event.getAction();
+                switch(action) {
+                    case DragEvent.ACTION_DROP:
+                        RecyclerListAdapter adapter = shadowDropRecyclerView.adapter;
+                        int position = getDragInfo(event).adapterPosition;
+                        adapter.mItems.remove(position);
+                        adapter.notifyItemRemoved(position);
+                    case DragEvent.ACTION_DRAG_EXITED:
+                        trash.clearColorFilter();
+                    case DragEvent.ACTION_DRAG_STARTED:
+                    case DragEvent.ACTION_DRAG_ENDED:
+                    case DragEvent.ACTION_DRAG_LOCATION:
+                        return true;
+                    case DragEvent.ACTION_DRAG_ENTERED:
+                        trash.setColorFilter(Color.argb(70, 0, 255, 0));
+                        return true;
+                }
+                return false;
+            }
+        });
     }
 
     RecyclerListAdapter adapter;

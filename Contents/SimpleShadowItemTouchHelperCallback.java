@@ -2,7 +2,6 @@ package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerVi
 
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.lang.reflect.Array;
 import java.util.Collections;
 
 public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.Callback {
-
-    private static final String TAG = "SimpleShadowItemTouchHe";
 
     private final RecyclerListAdapter mAdapter;
 
@@ -54,7 +50,6 @@ public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.C
 
     @Override
     public void moveItem(int fromPosition, int toPosition) {
-        Log.d(TAG, "moveItem() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
         moveItemInList(mAdapter.mItems, fromPosition, toPosition);
         mAdapter.notifyDataSetChanged();
     }
