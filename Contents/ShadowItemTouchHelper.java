@@ -1814,9 +1814,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
         }
 
         void checkItemInsert() {
-            if (mRecyclerView.isLayoutRequested() || mSelected == null) {
-                return;
-            }
+            if (mRecyclerView.isLayoutRequested() || mSelected == null) return;
             ViewHolder item = findViewHolderUnder(x, y);
             if (item == mSelected) return;
             Log.d(TAG, "item = [" + (item) + "]");
@@ -1827,12 +1825,6 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                     int itemPosition = item.getAdapterPosition();
                     moveSelector(selector, selectorPosition, itemPosition);
                 }
-//                final int fromPosition = mSelected.getAdapterPosition();
-//                if (mCallback.onMove(mRecyclerView, mSelected, item)) {
-//                    // keep target visible
-//                    mCallback.onMoved(mRecyclerView, mSelected, fromPosition,
-//                            item, toPosition, (int) x, (int) y);
-//                }
             }
         }
 
