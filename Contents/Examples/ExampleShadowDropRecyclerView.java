@@ -69,8 +69,9 @@ public class ExampleShadowDropRecyclerView extends RecyclerView {
         setLayoutManager(new LinearLayoutManager(context));
         new ShadowItemTouchHelper(new SimpleShadowItemTouchHelperCallback(adapter)).attachToRecyclerView(this);
 
-        // create 50 expandable items
-        for (int i = 0; i < 5; i++) {
+        int expandableItems = 500;
+
+        for (int i = 1; i < expandableItems+1; i++) {
             addItem("Header " + i, "Content " + i);
         }
     }

@@ -1639,6 +1639,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
         int dragStartedKey, dragEndedKey;
         int dragEnteredKey, dragExitedKey;
         int dragDropKey;
+        int scrollingKey;
 
         public void initToastList(Context context) {
             dragStartedKey = toastList.add(context, "DragEvent: Drag Started", Toast.LENGTH_SHORT);
@@ -1646,11 +1647,13 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             dragEnteredKey = toastList.add(context, "DragEvent: Drag Entered", Toast.LENGTH_SHORT);
             dragExitedKey = toastList.add(context, "DragEvent: Drag Exited", Toast.LENGTH_SHORT);
             dragDropKey = toastList.add(context, "DragEvent: Drag Drop", Toast.LENGTH_SHORT);
+            scrollingKey = toastList.add(context, "Scrolling", Toast.LENGTH_SHORT);
         }
 
         int startedX;
         int startedY;
         ViewHolder mSelected;
+        int mSelectedPosition;
         ShadowItemTouchHelper itemTouchHelper;
         private Rect mTmpRect;
         private long mDragScrollStartTimeInMs;
@@ -1712,6 +1715,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 }
             }
             if (scrollX != 0 || scrollY != 0) {
+                toastList.show(scrollingKey);
                 if (mDragScrollStartTimeInMs == Long.MIN_VALUE) {
                     mDragScrollStartTimeInMs = now;
                 }
@@ -1748,12 +1752,20 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                     mRecyclerView = itemTouchHelper.mRecyclerView;
                     mCallback = itemTouchHelper.mCallback;
                     mSelected = data.second;
+                    Log.d(TAG, "mSelected.getAdapterPosition() = [" + (mSelected.getAdapterPosition()) + "]");
+                    mSelectedPosition = mSelected.getAdapterPosition();
+                    if (mSelectedPosition == -1) {
+                        throw new RuntimeException("adapter position cannot be -1");
+                    }
                     startedX = mSelected.itemView.getLeft();
                     startedY = mSelected.itemView.getTop();
                     if (selector == null) {
                         selector = createSelector(mRecyclerView.getContext());
                         attachSelector(selector);
                     }
+                    x = event.getX();
+                    y = event.getY();
+                    checkItemInsert();
                     return true;
                 case DragEvent.ACTION_DRAG_ENTERED:
                     toastList.show(dragEnteredKey);
@@ -1768,11 +1780,16 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DROP:
                     toastList.show(dragDropKey);
                     Log.d(TAG, "onDrag: DROP");
-                    mSelected = null;
+
+                    x = event.getX();
+                    y = event.getY();
                     if (selector != null) {
                         detachSelector(selector);
                         selector = null;
                     }
+                    moveItemTo();
+                    mSelected = null;
+                    mSelectedPosition = 0;
                     return true;
                 case DragEvent.ACTION_DRAG_ENDED:
                     toastList.show(dragEndedKey);
@@ -1796,13 +1813,17 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                 case DragEvent.ACTION_DRAG_LOCATION:
                     x = event.getX();
                     y = event.getY();
-                    mRecyclerView.removeCallbacks(mScrollRunnable);
-                    mScrollRunnable.run();
+                    checkScroll();
                     checkItemInsert();
                     mRecyclerView.invalidate();
                     return true;
             }
             return false;
+        }
+
+        void checkScroll() {
+            mRecyclerView.removeCallbacks(mScrollRunnable);
+            mScrollRunnable.run();
         }
 
         ViewHolder findViewHolderUnder(float x, float y) {
@@ -1813,25 +1834,42 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             return null;
         }
 
+        int mSelectedPositionTo;
+
         void checkItemInsert() {
             if (mRecyclerView.isLayoutRequested() || mSelected == null) return;
             ViewHolder item = findViewHolderUnder(x, y);
-            if (item == mSelected) return;
-            Log.d(TAG, "item = [" + (item) + "]");
             if (item != null) {
                 RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
                 if (lm != null) {
-                    int selectorPosition = getSelectorPosition(selector);
-                    int itemPosition = item.getAdapterPosition();
-                    moveSelector(selector, selectorPosition, itemPosition);
+                    int selectorPositionBefore = getSelectorPosition(selector);
+                    int itemPositionBefore = item.getAdapterPosition();
+                    if (selectorPositionBefore != itemPositionBefore-1) {
+                        moveItem(selectorPositionBefore, itemPositionBefore);
+                    }
+                    mSelectedPositionTo = itemPositionBefore;
                 }
             }
+        }
+
+        void moveItemTo() {
+            if (mSelectedPosition > mSelectedPositionTo) {
+                moveItem(mSelectedPosition, mSelectedPositionTo - 1);
+            } else if (mSelectedPosition < mSelectedPositionTo)  {
+                moveItem(mSelectedPosition, mSelectedPositionTo - 2);
+            } else {
+                moveItem(mSelectedPosition, mSelectedPositionTo);
+            }
+        }
+
+        <E> void moveItemInList(List<E> list, int from, int to) {
+            list.add(to, list.remove(from));
         }
 
         public abstract View createSelector(Context context);
         public abstract void attachSelector(View selector);
         public abstract int getSelectorPosition(View selector);
-        public abstract void moveSelector(View selector, int fromPosition, int toPosition);
+        public abstract void moveItem(int fromPosition, int toPosition);
         public abstract void detachSelector(View selector);
 
         /**
@@ -2594,6 +2632,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                                     Log.d(TAG, "onDrawShadow() called with: canvas = [" + canvas + "]");
                                 }
                             };
+                            Log.d(TAG, "vh.getAdapterPosition() = [" + (vh.getAdapterPosition()) + "]");
                             selected.startDragAndDrop(
                                     null,
                                     shadowBuilder,

@@ -53,9 +53,9 @@ public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.C
     }
 
     @Override
-    public void moveSelector(View selector, int fromPosition, int toPosition) {
-        Log.d(TAG, "moveSelector() called with: selector = [" + selector + "], fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
-        Collections.swap(mAdapter.mItems, fromPosition, toPosition);
+    public void moveItem(int fromPosition, int toPosition) {
+        Log.d(TAG, "moveItem() called with: fromPosition = [" + fromPosition + "], toPosition = [" + toPosition + "]");
+        moveItemInList(mAdapter.mItems, fromPosition, toPosition);
         mAdapter.notifyDataSetChanged();
     }
 
