@@ -1891,16 +1891,22 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                                 ViewCompat.postOnAnimation(mRecyclerView, this);
                                 return;
                             }
-                            if (selectorPositionBefore != itemPositionBefore - 1) {
-                                moveItem(selectorPositionBefore, itemPositionBefore);
+                            if (selectorPositionBefore == itemPositionBefore) {
+                                // drag item over selector
+                                mSelectedPositionTo = itemPositionBefore+1;
+                            } else {
+                                if (selectorPositionBefore != itemPositionBefore - 1) {
+                                    moveItem(selectorPositionBefore, itemPositionBefore);
+                                }
+                                mSelectedPositionTo = itemPositionBefore;
                             }
-                            mSelectedPositionTo = itemPositionBefore;
                             checkCompleted = true;
                             if (onCheckComplete != null) {
                                 onCheckComplete.run();
                             }
                         }
                     } else {
+                        if (selector == null) return;
                         moveItemToEnd(getSelectorPosition(selector));
                         mSelectedPositionTo = getSelectorPosition(selector);
                         checkCompleted = true;
