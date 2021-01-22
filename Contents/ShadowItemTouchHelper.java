@@ -1721,7 +1721,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             public final ShadowItemTouchHelper shadowItemTouchHelper;
             public final ViewHolder viewHolder;
             public final int adapterPosition;
-            DragInfo(ShadowItemTouchHelper shadowItemTouchHelper, ViewHolder viewHolder, int adapterPosition) {
+            DragInfo(ShadowItemTouchHelper shadowItemTouchHelper, ViewHolder viewHolder, int adapterPosition, View.DragShadowBuilder shadowBuilder) {
                 this.shadowItemTouchHelper = shadowItemTouchHelper;
                 this.viewHolder = viewHolder;
                 this.adapterPosition = adapterPosition;
@@ -1937,7 +1937,9 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                     ViewCompat.postOnAnimation(mRecyclerView, this);
                     return;
                 }
-                Log.d(TAG, "dragInfo.adapterPosition = [" + (dragInfo.adapterPosition) + "], mSelectedPositionTo = [" + (mSelectedPositionTo) + "]");
+                if (DEBUG) {
+                    Log.d(TAG, "dragInfo.adapterPosition = [" + (dragInfo.adapterPosition) + "], mSelectedPositionTo = [" + (mSelectedPositionTo) + "]");
+                }
                 if (dragInfo.adapterPosition > mSelectedPositionTo) {
                     // dragging an item up
                     moveItem(dragInfo.adapterPosition + 1, mSelectedPositionTo);
@@ -2727,25 +2729,14 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                         }
                         if (mCallback.isLongPressDragEnabled()) {
                             View selected = vh.itemView;
-                            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(selected) {
-                                /**
-                                 * Draws the shadow image. The system creates the {@link Canvas} object
-                                 * based on the dimensions it received from the
-                                 * {@link #onProvideShadowMetrics(Point, Point)} callback.
-                                 *
-                                 * @param canvas A {@link Canvas} object in which to draw the shadow image.
-                                 */
-                                @Override
-                                public void onDrawShadow(Canvas canvas) {
-                                    super.onDrawShadow(canvas);
-                                    Log.d(TAG, "onDrawShadow() called with: canvas = [" + canvas + "]");
-                                }
-                            };
-                            Log.d(TAG, "vh.getAdapterPosition() = [" + (vh.getAdapterPosition()) + "]");
+                            if (DEBUG) {
+                                Log.d(TAG, "vh.getAdapterPosition() = [" + (vh.getAdapterPosition()) + "]");
+                            }
+                            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(selected);
                             selected.startDragAndDrop(
                                     null,
                                     shadowBuilder,
-                                    new Callback.DragInfo(ShadowItemTouchHelper.this, vh, vh.getAdapterPosition()),
+                                    new Callback.DragInfo(ShadowItemTouchHelper.this, vh, vh.getAdapterPosition(), shadowBuilder),
                                     View.DRAG_FLAG_GLOBAL|View.DRAG_FLAG_OPAQUE
                             );
                         }
