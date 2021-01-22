@@ -45,12 +45,22 @@ public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.C
 
     @Override
     public int getSelectorPosition(View selector) {
-        return mAdapter.mItems.indexOf(selector);
+        int idx = mAdapter.mItems.indexOf(selector);
+        if (idx == -1) {
+            throw new RuntimeException("selector does not exist");
+        }
+        return idx;
     }
 
     @Override
     public void moveItem(int fromPosition, int toPosition) {
         moveItemInList(mAdapter.mItems, fromPosition, toPosition);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void moveItemToEnd(int fromPosition) {
+        moveItemToEndOfList(mAdapter.mItems, fromPosition);
         mAdapter.notifyDataSetChanged();
     }
 

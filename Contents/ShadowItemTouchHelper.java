@@ -1778,6 +1778,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                         selector = createSelector(mRecyclerView.getContext());
                         attachSelector(selector);
                     }
+                    checkItemInsert();
                     return true;
 
                 case DragEvent.ACTION_DROP:
@@ -1788,22 +1789,18 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
 
                     x = event.getX();
                     y = event.getY();
-                    if (selector != null) {
-                        detachSelector(selector);
-                        selector = null;
-                    }
-                    moveItemTo();
-                    dragInfo = null;
+                    checkItemInsert(() -> moveItemTo(() -> {
+                        if (selector != null) {
+                            detachSelector(selector);
+                            selector = null;
+                        }
+                        dragInfo = null;
+                    }));
                     return true;
                 case DragEvent.ACTION_DRAG_ENDED:
                     if (DEBUG) {
                         toastList.show(dragEndedKey);
                         Log.d(TAG, "onDrag: ENDED");
-                    }
-                    dragInfo = null;
-                    if (selector != null) {
-                        detachSelector(selector);
-                        selector = null;
                     }
                     return true;
                 case DragEvent.ACTION_DRAG_EXITED:
@@ -1834,6 +1831,34 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             mScrollRunnable.run();
         }
 
+        void checkItemInsert() {
+            onCheckComplete = null;
+            mRecyclerView.removeCallbacks(mCheckItemInsertRunnable);
+            mCheckItemInsertRunnable.run();
+        }
+
+        Runnable onCheckComplete;
+
+        void checkItemInsert(Runnable onChecked) {
+            onCheckComplete = onChecked;
+            mRecyclerView.removeCallbacks(mCheckItemInsertRunnable);
+            mCheckItemInsertRunnable.run();
+        }
+
+        Runnable onMoveComplete;
+
+        void moveItemTo() {
+            onMoveComplete = null;
+            mRecyclerView.removeCallbacks(mMoveItemToRunnable);
+            mMoveItemToRunnable.run();
+        }
+
+        void moveItemTo(Runnable onMove) {
+            onMoveComplete = onMove;
+            mRecyclerView.removeCallbacks(mMoveItemToRunnable);
+            mMoveItemToRunnable.run();
+        }
+
         ViewHolder findViewHolderUnder(float x, float y) {
             View found = mRecyclerView.findChildViewUnder(x, y);
             if (found != null) {
@@ -1842,42 +1867,112 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             return null;
         }
 
-        int mSelectedPositionTo;
+        int mSelectedPositionTo = RecyclerView.NO_POSITION;
 
-        void checkItemInsert() {
-            if (mRecyclerView.isLayoutRequested()) return;
-            ViewHolder item = findViewHolderUnder(x, y);
-            if (item != null) {
-                RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
-                if (lm != null) {
-                    int selectorPositionBefore = getSelectorPosition(selector);
-                    int itemPositionBefore = item.getAdapterPosition();
-                    if (selectorPositionBefore != itemPositionBefore-1) {
-                        moveItem(selectorPositionBefore, itemPositionBefore);
+        boolean checkCompleted = false;
+
+        final Runnable mCheckItemInsertRunnable = new Runnable() {
+            @Override
+            public void run() {
+                checkCompleted = false;
+                if (mRecyclerView.isLayoutRequested()) {
+                    mRecyclerView.removeCallbacks(mCheckItemInsertRunnable);
+                    ViewCompat.postOnAnimation(mRecyclerView, this);
+                } else {
+                    ViewHolder item = findViewHolderUnder(x, y);
+                    if (item != null) {
+                        mSelectedPositionTo = RecyclerView.NO_POSITION;
+                        RecyclerView.LayoutManager lm = mRecyclerView.getLayoutManager();
+                        if (lm != null) {
+                            int selectorPositionBefore = getSelectorPosition(selector);
+                            int itemPositionBefore = item.getAdapterPosition();
+                            if (selectorPositionBefore == RecyclerView.NO_POSITION || itemPositionBefore == RecyclerView.NO_POSITION) {
+                                mRecyclerView.removeCallbacks(mCheckItemInsertRunnable);
+                                ViewCompat.postOnAnimation(mRecyclerView, this);
+                                return;
+                            }
+                            if (selectorPositionBefore != itemPositionBefore - 1) {
+                                moveItem(selectorPositionBefore, itemPositionBefore);
+                            }
+                            mSelectedPositionTo = itemPositionBefore;
+                            checkCompleted = true;
+                            if (onCheckComplete != null) {
+                                onCheckComplete.run();
+                            }
+                        }
+                    } else {
+                        moveItemToEnd(getSelectorPosition(selector));
+                        mSelectedPositionTo = getSelectorPosition(selector);
+                        checkCompleted = true;
+                        if (onCheckComplete != null) {
+                            onCheckComplete.run();
+                        }
                     }
-                    mSelectedPositionTo = itemPositionBefore;
                 }
             }
-        }
+        };
 
-        void moveItemTo() {
-            if (dragInfo.adapterPosition > mSelectedPositionTo) {
-                moveItem(dragInfo.adapterPosition, mSelectedPositionTo - 1);
-            } else if (dragInfo.adapterPosition < mSelectedPositionTo)  {
-                moveItem(dragInfo.adapterPosition, mSelectedPositionTo - 2);
-            } else {
-                moveItem(dragInfo.adapterPosition, mSelectedPositionTo);
+        final Runnable mMoveItemToRunnable = new Runnable() {
+            @Override
+            public void run() {
+                ViewHolder v = findViewHolderUnder(x, y);
+                if (v != null && v.getAdapterPosition() == -1) {
+                    mRecyclerView.removeCallbacks(mMoveItemToRunnable);
+                    checkItemInsert(() -> moveItemTo(() -> {
+                        if (selector != null) {
+                            detachSelector(selector);
+                            selector = null;
+                        }
+                    }));
+                    return;
+                }
+                if (mSelectedPositionTo == RecyclerView.NO_POSITION && !checkCompleted) {
+                    mRecyclerView.removeCallbacks(mMoveItemToRunnable);
+                    ViewCompat.postOnAnimation(mRecyclerView, this);
+                    return;
+                }
+                Log.d(TAG, "dragInfo.adapterPosition = [" + (dragInfo.adapterPosition) + "], mSelectedPositionTo = [" + (mSelectedPositionTo) + "]");
+                if (dragInfo.adapterPosition > mSelectedPositionTo) {
+                    // dragging an item up
+                    moveItem(dragInfo.adapterPosition + 1, mSelectedPositionTo);
+                } else if (dragInfo.adapterPosition == mSelectedPositionTo) {
+                    // dragging an item to item directly above
+                    moveItem(dragInfo.adapterPosition + 1, mSelectedPositionTo);
+                } else if (dragInfo.adapterPosition == mSelectedPositionTo - 1) {
+                    // dragging an item onto itself
+                } else if (dragInfo.adapterPosition == mSelectedPositionTo - 2) {
+                    // dragging an item to an item directly below
+                } else if (dragInfo.adapterPosition < mSelectedPositionTo) {
+                    // dragging an item down
+                    moveItem(dragInfo.adapterPosition, mSelectedPositionTo - 1);
+                }
+                if (onMoveComplete != null) {
+                    onMoveComplete.run();
+                }
             }
-        }
+        };
 
         <E> void moveItemInList(List<E> list, int from, int to) {
+            if (from == RecyclerView.NO_POSITION) {
+                throw new RuntimeException("from NO POSITION");
+            } else if (to == RecyclerView.NO_POSITION) {
+                throw new RuntimeException("to NO POSITION");
+            }
             list.add(to, list.remove(from));
+        }
+
+        <E> void moveItemToEndOfList(List<E> list, int from) {
+            if (from == RecyclerView.NO_POSITION) {
+                throw new RuntimeException("from NO POSITION");
+            }
+            list.add(list.remove(from));
         }
 
         public abstract View createSelector(Context context);
         public abstract void attachSelector(View selector);
         public abstract int getSelectorPosition(View selector);
         public abstract void moveItem(int fromPosition, int toPosition);
+        public abstract void moveItemToEnd(int fromPosition);
         public abstract void detachSelector(View selector);
 
         /**
