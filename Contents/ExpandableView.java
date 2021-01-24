@@ -124,4 +124,44 @@ public class ExpandableView extends FrameLayout {
         content.removeAllViewsInLayout();
         content.addView(view, 0, new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
     }
+
+    public FrameLayout getHeader() {
+        return header;
+    }
+
+    public FrameLayout getContent() {
+        return content;
+    }
+
+    public void setHeaderTag(Object object) {
+        header.setTag(object);
+    }
+
+    public void setHeaderTag(int key, Object object) {
+        header.setTag(key, object);
+    }
+
+    public Object getHeaderTag() {
+        return header.getTag();
+    }
+
+    public Object getHeaderTag(int key) {
+        return header.getTag(key);
+    }
+
+    public void setContentTag(Object object) {
+        content.setTag(object);
+    }
+
+    public void setContentTag(int key, Object object) {
+        content.setTag(key, object);
+    }
+
+    public Object getContentTag() {
+        return content.getTag();
+    }
+
+    public Object getContentTag(int key) {
+        return content.getTag(key);
+    }
 }
