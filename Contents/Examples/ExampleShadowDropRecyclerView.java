@@ -1,4 +1,4 @@
-package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.Examples;
+package smallville7123.DraggableSwipableExpandableRecyclerView.Contents.Examples;
 
 import android.app.Activity;
 import android.content.Context;
@@ -18,14 +18,14 @@ import androidx.annotation.DrawableRes;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ExpandableView;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.RecyclerListAdapter;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.SimpleShadowItemTouchHelperCallback;
+import smallville7123.DraggableSwipableExpandableRecyclerView.Contents.ExpandableView;
+import smallville7123.DraggableSwipableExpandableRecyclerView.Contents.RecyclerListAdapter;
+import smallville7123.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper;
+import smallville7123.DraggableSwipableExpandableRecyclerView.Contents.SimpleShadowItemTouchHelperCallback;
 
 import static android.R.drawable.ic_menu_delete;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper.Callback.getDragInfo;
+import static smallville7123.DraggableSwipableExpandableRecyclerView.Contents.ShadowItemTouchHelper.Callback.getDragInfo;
 
 public class ExampleShadowDropRecyclerView extends RecyclerView {
 

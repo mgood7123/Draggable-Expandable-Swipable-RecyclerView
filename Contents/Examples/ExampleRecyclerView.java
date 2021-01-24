@@ -1,4 +1,4 @@
-package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.Examples;
+package smallville7123.DraggableSwipableExpandableRecyclerView.Contents.Examples;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.ExpandableView;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.RecyclerListAdapter;
-import smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents.SimpleItemTouchHelperCallback;
+import smallville7123.DraggableSwipableExpandableRecyclerView.Contents.ExpandableView;
+import smallville7123.DraggableSwipableExpandableRecyclerView.Contents.RecyclerListAdapter;
+import smallville7123.DraggableSwipableExpandableRecyclerView.Contents.SimpleItemTouchHelperCallback;
 
 public class ExampleRecyclerView extends RecyclerView {
 

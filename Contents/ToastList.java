@@ -1,4 +1,4 @@
-package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents;
+package smallville7123.DraggableSwipableExpandableRecyclerView.Contents;
 
 import android.content.Context;
 import android.widget.Toast;

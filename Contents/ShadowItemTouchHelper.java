@@ -16,14 +16,13 @@
 
 // MODIFIED
 
-package smallville7123.example.taskbuilder.DraggableSwipableExpandableRecyclerView.Contents;
+package smallville7123.DraggableSwipableExpandableRecyclerView.Contents;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.Log;
@@ -1659,7 +1658,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
             public void run() {
                     if (dragInfo != null && scrollIfNecessary()) {
                         if (dragInfo.viewHolder != null) { //it might be lost during scrolling
-                            checkItemInsert();
+                            checkItemInsert(onCheckComplete);
                         }
                         mRecyclerView.removeCallbacks(mScrollRunnable);
                         ViewCompat.postOnAnimation(mRecyclerView, this);
@@ -1908,7 +1907,7 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                     } else {
                         if (selector == null) return;
                         moveItemToEnd(getSelectorPosition(selector));
-                        mSelectedPositionTo = getSelectorPosition(selector);
+                        mSelectedPositionTo = getSelectorPosition(selector)+1;
                         checkCompleted = true;
                         if (onCheckComplete != null) {
                             onCheckComplete.run();
