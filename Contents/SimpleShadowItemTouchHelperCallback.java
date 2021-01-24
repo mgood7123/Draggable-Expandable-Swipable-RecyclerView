@@ -14,11 +14,18 @@ import java.util.Collections;
 
 public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.Callback {
 
-    private final RecyclerListAdapter mAdapter;
+    private RecyclerListAdapter mAdapter;
 
     final int scrollSpeed = 20;
 
+    public SimpleShadowItemTouchHelperCallback() {
+    }
+
     public SimpleShadowItemTouchHelperCallback(RecyclerListAdapter adapter) {
+        mAdapter = adapter;
+    }
+
+    public void setAdapter(RecyclerListAdapter adapter) {
         mAdapter = adapter;
     }
 
