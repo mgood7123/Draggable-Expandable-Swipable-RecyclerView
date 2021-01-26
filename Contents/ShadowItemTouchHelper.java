@@ -23,6 +23,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.Log;
@@ -2731,7 +2732,26 @@ public class ShadowItemTouchHelper extends RecyclerView.ItemDecoration
                             if (DEBUG) {
                                 Log.d(TAG, "vh.getAdapterPosition() = [" + (vh.getAdapterPosition()) + "]");
                             }
-                            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(selected);
+                            View.DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(selected) {
+                                @Override
+                                public void onProvideShadowMetrics(Point outShadowSize, Point outShadowTouchPoint) {
+                                    final View view = getView();
+                                    if (view != null) {
+                                        outShadowSize.set(view.getWidth(), view.getHeight());
+                                        int shadowX = outShadowSize.x;
+                                        int shadowY = outShadowSize.y;
+                                        int fingerX = (int) x;
+                                        int fingerY = (int) y;
+                                        if (shadowY > fingerY) {
+                                            outShadowTouchPoint.set(fingerX, fingerY);
+                                        } else {
+                                            outShadowTouchPoint.set(fingerX, fingerY - shadowY);
+                                        }
+                                    } else {
+                                        Log.e(TAG, "Asked for drag thumb metrics but no view");
+                                    }
+                                }
+                            };
                             selected.startDragAndDrop(
                                     null,
                                     shadowBuilder,
