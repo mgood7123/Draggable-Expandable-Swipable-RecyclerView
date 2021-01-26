@@ -7,6 +7,8 @@ import android.widget.FrameLayout;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 public class ViewHolder extends RecyclerView.ViewHolder {
 
     FrameLayout root;
@@ -18,7 +20,7 @@ public class ViewHolder extends RecyclerView.ViewHolder {
 
     public void setItem(View view) {
         if(view.getParent() != null) ((ViewGroup)view.getParent()).removeView(view);
-        root.addView(view);
+        root.addView(view, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
     }
 
     public void onItemSelected() {

@@ -9,13 +9,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+
 public class RecyclerListAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     public final ArrayList<View> mItems = new ArrayList<>();
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(new FrameLayout(parent.getContext()));
+        FrameLayout fl = new FrameLayout(parent.getContext());
+        fl.setLayoutParams(new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        return new ViewHolder(fl);
     }
 
     @Override
