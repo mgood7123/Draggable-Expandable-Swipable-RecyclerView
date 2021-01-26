@@ -118,6 +118,7 @@ public class SimpleShadowItemTouchHelperCallback extends ShadowItemTouchHelper.C
         int position = viewHolder.getAdapterPosition();
         mAdapter.mItems.remove(position);
         mAdapter.notifyItemRemoved(position);
+        mAdapter.notifyItemRangeChanged(position, mAdapter.mItems.size() - position);
     }
 
     @Override
